@@ -1,5 +1,6 @@
 # StarfallEX - Music Player
-### This program will read a Google Sheet url to get a playlist, then plays them with Fast Fourier Transform animation
+### This program will read a GitHub Playlist url to get a playlist, then plays them with Fast Fourier Transform animation
+### Example playlist can be found in Repo
 
 The sine wave at the bottom is the progress bar of the song. this will soon be scrollable.<br>
 Along with that you can change many settings such as circle points and more, For more information see below.
