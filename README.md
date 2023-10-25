@@ -1,15 +1,30 @@
 # StarfallEX - Music Player
 ### This program will read a GitHub Playlist url to get a playlist, then plays them with Fast Fourier Transform animation
-### Example playlist can be found in Repo
 
 The sine wave at the bottom is the progress bar of the song. this will soon be scrollable.<br>
 Along with that you can change many settings such as circle points and more, For more information see below.
+
+# Setting up your own playlist
+<br>
+You need some method of uploading files and music. Upload the a .json with the format in the example to a file service and put that URL in the Starfall <br>
+ <br>
+You then need to upload your music files somewhere and link them into the .JSON file.
+
+### URLS MUST BE WHITELISTED ACCORDING TO [THIS](https://github.com/thegrb93/StarfallEx/blob/master/lua/starfall/permissions/providers_sh/url_whitelist.lua )
+
+<br>
+
+Some recommended solutions for this.
+
+`Discord` - Automatically removes files after 14 days <br>
+`Dropbox` - After many downloads will rate limit for extended period of time <br>
+`IPFS` - Difficult to setup, effective for permanant usage <br>
 
 <br>
 
 ## <b>Examples</b>
 
-![MusicPlayer](https://github.com/Toakley683/StarfallEX-Music-Player/assets/101290005/d8366ef7-5bfb-43eb-a3d5-00182bc82f8b)
+![MusicPlayer](https://github.com/thegrb93/StarfallEx/blob/master/lua/starfall/permissions/providers_sh/url_whitelist.lua)
 
 <br>
 
