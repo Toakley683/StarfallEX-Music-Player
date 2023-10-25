@@ -17,4 +17,3 @@ Along with that you can change many settings such as circle points and more, For
 
 
 `CirclePoints` - This is the amount of points around the circle  <br>
-`Test` - Test  <br>
