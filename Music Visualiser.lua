@@ -1,5 +1,5 @@
 --@name Music Player
---@author
+--@author toakley682
 --@shared
 
 if CLIENT then
