@@ -41,6 +41,7 @@ Some recommended solutions for this.
 `SineHeight` - This is how tall the sine waves are <br>
 `SineStart` - This is where the sine wave starts ( Negative values start from the bottom ) <br>
 `SineNoiseMultiplier` - This is how much randomness is added to the Sine wave <b>(</b> Default: `0` <b>)</b> <br>
+`SineFilled` - Whether or not the sine wave fills in the bottom pixels <b>(</b> Default: `false` <b>)</b> <br>
 
 `FFTSplits` - This splits the lines into quadents, think of this as how many spikes you want <b>(</b> Default: `2` <b>)</b> <br>
 `Samples` - This is how many samples the FFT calculate has <b>(</b> Default: `6` <b>)</b> <br>
