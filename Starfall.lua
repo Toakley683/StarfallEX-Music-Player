@@ -23,6 +23,7 @@ if CLIENT then
     
     local ProgressBarLines = 128
     local SineScrollMul = 2
+    local SineSpectrum = 16
     local SineHeight = 15
     local SineStart = -45
     local SineNoiseMultiplier = 0
@@ -48,6 +49,12 @@ if CLIENT then
     local ScrollY = 0
     local MaximumSongsRendered = 15
     
+    function sineMath( X )
+    
+        return SineHeight * math.sin( ( X / 180 * SineWavelength ) - ( timer.curtime() * SineScrollMul ) )
+    
+    end
+    
     function setVolumeByDistance( Bass, Distance, MaxDistance, MinDistance, MaxVolume )
     
         local ClampedDistance = math.clamp( Distance, MinDistance, MaxDistance ) - MinDistance
@@ -61,6 +68,8 @@ if CLIENT then
     function loadMusic( URL, T )
     
         if URL == "" then return end
+        
+        printConsole( URL )
             
         bass.loadURL( URL, "3d noblock", function( Bass, Error, Name )
         
@@ -99,6 +108,7 @@ if CLIENT then
             
                 if not PlayingSong:isValid() then return end
                 if not ScreenEntity then return end
+                if not ScreenEntity:isValid() then return end
                 
                 local SoundOrigin = ScreenEntity:getPos()
                 
@@ -175,330 +185,328 @@ if CLIENT then
         end
     
     end
+        
+    ScreenEntity = nil
+    local Aspect = 0
     
-    net.receive( "SendScreen", function( len, plr )
+    function tick()
+    
+        if not PlayingSong then return end
+        if not PlayingSong:isValid() then return end
+    
+        local SX, SY = render.getResolution()
         
-        ScreenEntity = net.readEntity()
-        local Aspect = 0
+        local Center = Vector( SX / 2, ( SY / 2 ) * Aspect )
         
-        function tick()
+        if table.count( FFT ) <= 0 then return end
         
-            if not PlayingSong then return end
-            if not PlayingSong:isValid() then return end
+        local FFTCount = 256*2^Samples
         
-            local SX, SY = render.getResolution()
+        for I = 0, CirclePoints do
             
-            local Center = Vector( SX / 2, ( SY / 2 ) * Aspect )
+            local Index = math.floor( FFTCount / CirclePoints * I )
             
-            if table.count( FFT ) <= 0 then return end
+            local Last = LastFFT[I] or 0
+            local Curr = getFFTAtI( I ) or getFFTAtI( 0 ) or 0
             
-            local FFTCount = 256*2^Samples
+            local F = math.lerp( 
+                LineReactance,
+                Last, 
+                Curr
+            )
             
-            for I = 0, CirclePoints do
-                
-                local Index = math.floor( FFTCount / CirclePoints * I )
-                
-                local Last = LastFFT[I] or 0
-                local Curr = getFFTAtI( I ) or getFFTAtI( 0 ) or 0
-                
-                local F = math.lerp( 
-                    LineReactance,
-                    Last, 
-                    Curr
-                )
-                
-                LastFFT[I] = F
-                
-                local LineDistance = math.min( CircleRadius + ( F * LineMagnitude ), LineMaximumMagnitude )
-                
-                Lines[I] =  localToWorld( 
-                                Vector( LineDistance, 0, 0 ), 
-                                Angle(),
-                                Center,
-                                Angle( 0, 360 / CirclePoints * I, 0 )
-                            )
-                            
-                local CurLine = Lines[I]
-                local LastLine = Lines[I - 1] or Lines[CirclePoints] or Lines[0]
-                
-                local CalmColour = Color( 80, 60, 200 )
-                local ExtremeColour = Color( 200, 50, 50 )
-                
-                local ExtremeFactor = ( LineDistance / ( LineMaximumMagnitude / ExtremeWeight ) )
-                
-                local R = math.lerp( ExtremeFactor, CalmColour.r, ExtremeColour.r )
-                local G = math.lerp( ExtremeFactor, CalmColour.g, ExtremeColour.g )
-                local B = math.lerp( ExtremeFactor, CalmColour.b, ExtremeColour.b )
+            LastFFT[I] = F
             
-                local Colour = Color( R, G, B )
+            local LineDistance = math.min( CircleRadius + ( F * LineMagnitude ), LineMaximumMagnitude )
             
-                render.setColor( Colour )
-                render.drawLine( CurLine.x, CurLine.y, LastLine.x, LastLine.y )
+            Lines[I] =  localToWorld( 
+                            Vector( LineDistance, 0, 0 ), 
+                            Angle(),
+                            Center,
+                            Angle( 0, 360 / CirclePoints * I, 0 )
+                        )
+                        
+            local CurLine = Lines[I]
+            local LastLine = Lines[I - 1] or Lines[CirclePoints] or Lines[0]
+            
+            local CalmColour = Color( 80, 60, 200 )
+            local ExtremeColour = Color( 200, 50, 50 )
+            
+            local ExtremeFactor = ( LineDistance / ( LineMaximumMagnitude / ExtremeWeight ) )
+            
+            local R = math.lerp( ExtremeFactor, CalmColour.r, ExtremeColour.r )
+            local G = math.lerp( ExtremeFactor, CalmColour.g, ExtremeColour.g )
+            local B = math.lerp( ExtremeFactor, CalmColour.b, ExtremeColour.b )
+        
+            local Colour = Color( R, G, B )
+        
+            render.setColor( Colour )
+            render.drawLine( CurLine.x, CurLine.y, LastLine.x, LastLine.y )
+        
+        end
+        
+        local ProgressDelta = ( 1 / PlayingSong:getLength() * PlayingSong:getTime() )
+            
+        local StartY = SineStart
+        
+        if SineStart < 0 then 
+            StartY = ( SY * Aspect ) + SineStart 
+        end
+        
+        for I = 0, ProgressBarLines do
+        
+            local X = SX / ProgressBarLines * I
+            local Y = sineMath( X )
+            
+            local Rand = 0
+            
+            if ProgressLinesRands[I] then
+            
+                Rand = ProgressLinesRands[I] or 0
+            
+            else
+            
+                ProgressLinesRands[I] = math.rand( -1, 1 )
             
             end
             
-            local ProgressDelta = ( 1 / PlayingSong:getLength() * PlayingSong:getTime() )
-                
-            local StartY = SineStart
+            ProgressLines[I] = Vector( X, Y + ( Rand * SineNoiseMultiplier ), 0 )
             
-            if SineStart < 0 then 
-                StartY = ( SY * Aspect ) + SineStart 
-            end
+            local CurrLine = ProgressLines[I]
+            local LastLine = ProgressLines[I-1] or ProgressLines[I]
+        
+            local LineProgress = ( 1 / ProgressBarLines * I )
+            local LineProgressNext = ( 1 / ProgressBarLines * ( I + 1 ) )
             
-            for I = 1, ProgressBarLines do
+            local IsNextColoured = ProgressDelta > LineProgressNext
             
-                local X = SX / ProgressBarLines * I
-                local Y = SineHeight * math.sin( I * 120 - ( timer.curtime() * SineScrollMul ) )
+            local Colour = Color( 60, 150, 250 )
+            local TimeColour = Color( 200, 50, 50 )
+            
+            local V1 = Vector( Colour.r, Colour.g, Colour.b )
+            local V2 = Vector( TimeColour.r, TimeColour.g, TimeColour.b )
+            
+            local Inbetween = math.lerpVector( 0.5, V1, V2 )
+            local MiddleColour = Color( Inbetween.x, Inbetween.y, Inbetween.z )
+        
+            if ProgressDelta > LineProgress then 
+            
+                Colour = TimeColour
                 
-                local Rand = 0
-                
-                if ProgressLinesRands[I] then
-                
-                    Rand = ProgressLinesRands[I] or 0
-                
-                else
-                
-                    ProgressLinesRands[I] = math.rand( -1, 1 )
+                if IsNextColoured == false then
+            
+                    Colour = MiddleColour
+                    PointerID = I
                 
                 end
-                
-                ProgressLines[I] = Vector( X, Y + ( Rand * SineNoiseMultiplier ), 0 )
-                
-                local CurrLine = ProgressLines[I]
-                local LastLine = ProgressLines[I-1] or Vector( 0 )
             
-                local LineProgress = ( 1 / ProgressBarLines * I )
-                local LineProgressNext = ( 1 / ProgressBarLines * ( I + 1 ) )
-                
-                local IsNextColoured = ProgressDelta > LineProgressNext
-                
-                local Colour = Color( 60, 150, 250 )
-                local TimeColour = Color( 200, 50, 50 )
-                
-                local V1 = Vector( Colour.r, Colour.g, Colour.b )
-                local V2 = Vector( TimeColour.r, TimeColour.g, TimeColour.b )
-                
-                local Inbetween = math.lerpVector( 0.5, V1, V2 )
-                local MiddleColour = Color( Inbetween.x, Inbetween.y, Inbetween.z )
+            end
+        
+            render.setColor( Colour )
+            render.drawLine( CurrLine.x, StartY + CurrLine.y, LastLine.x, StartY + LastLine.y )
+        
+        end
+    
+    end
+    
+    function findButtonAtXY( X, Y )
+    
+        if X == nil then return end
+        if Y == nil then return end
+        
+        for Index, Data in pairs( Buttons ) do
+        
+            local Pos = Data.Pos
+            local Size = Data.Size
+        
+            local Min = Pos
+            local Max = Pos + Size
             
-                if ProgressDelta > LineProgress then 
+            if X > Max.x then continue end
+            if X < Min.x then continue end
+            
+            if Y > Max.y then continue end
+            if Y < Min.y then continue end
+            
+            Data.CB()
+            return 
+            
+        end
+        
+    end
+    
+    function newButton( Index, Position, Size, Callback )
+        
+        // Creating a new Button
+        
+        local Data = {
+            Pos=Position,
+            Size=Size,
+            CB=Callback
+        }
+        
+        Buttons[Index] = Data
+    
+    end
+    
+    hook.add( "mouseWheeled", "", function( Delta )
+    
+        ScrollY = math.clamp( ScrollY - Delta, 0, #SongList - MaximumSongsRendered )
+    
+    end)
+    
+    function newSongText( Index, Data )
+
+        local SongFont = render.createFont( 
+            "Roboto", // Font Type
+            15, // Font size
+            500, // Font weight
+            false, // Anti-Alias
+            false, // Additive
+            false, // Shadow
+            false, // Outline
+            false, // Blur Size
+            false, // Extended
+            nil  // Scanlines
+        )
+    
+        local Height = 15
+        
+        local StartX = 15
+        local StartY = 15
+        local FinalY = StartY + ( Index * ( 5 + Height ) )
+        
+        local Text = Data.Name
+        
+        render.setFont( SongFont )
+        render.drawText( StartX + 3, FinalY + 1.25, Text, 0 )
+        
+        local SizeX, SizeY = render.getTextSize( Text )
+        render.drawRectOutline( StartX, FinalY, SizeX + 6, Height + 2.5 )
+        
+        newButton( Index, Vector( StartX, FinalY ), Vector( SizeX + 6, Height + 2.5 ), function()
+        
+            net.start( "SongRequest" )
+            net.writeString( Data.URL )
+            net.send()
+        
+        end)
+    
+    end
+    
+    function menuTick( Alpha )
+        
+        render.setColor( Color( 255, 255, 255, Alpha ) )
+        
+        if table.count( SongList ) <= 0 then return end
+    
+        for Index = 1, MaximumSongsRendered do
+            
+            local Data = SongList[Index+ScrollY]
+            
+            if Data == nil then continue end
+        
+            newSongText( Index, Data )
+        
+        end
+    
+    end
+    
+    hook.add( "inputPressed", "", function( KeyCode )
+    
+        if KeyCode == 15 then
+        
+            findButtonAtXY( CursorX, CursorY )
+        
+        end
+    
+    end)
+    
+    hook.add( "renderoffscreen", "", function()
+    
+        render.selectRenderTarget( "MusicPlayerRT" )
+        
+        if not RenderThread then
+            
+            RenderThread = coroutine.create( function()
+            
+                render.clear()
                 
-                    Colour = TimeColour
+                tick()
+                
+                if SX then
+                
+                    if CursorX == nil then return end
+                    if CursorY == nil then return end
+                
+                    local ShowDistance = 50
+                    local Distance = Vector( 12.5, 12.5, 0 ):getDistance( Vector( CursorX, CursorY, 0 ) )
                     
-                    if IsNextColoured == false then
+                    local Delta = 1 - math.clamp( 1 / ShowDistance * Distance, 0, 1 )
                 
-                        Colour = MiddleColour
-                        PointerID = I
+                    render.setColor( Color( 255, 255, 255, 255 * Delta ) )
+                    render.drawFilledCircle( 12.5, 12.5, 7.5 )
+                
+                    newButton( 0, Vector( 5, 5 ), Vector( 15, 15 ), function()
+                    
+                        MenuOpenned = !MenuOpenned
+                    
+                    end)
+                
+                    if not MenuOpenned then return end
+                
+                    if CursorX < ( SX / 3 ) then
+
+                        local MaxAlphaRange = SX / 4
+                        local Max = ( SX / 3 )
+                        local Alpha = 255 - ( 255 / Max * CursorX )
+                    
+                        menuTick( Alpha )
                     
                     end
                 
                 end
-            
-                render.setColor( Colour )
-                render.drawLine( CurrLine.x, StartY + CurrLine.y, LastLine.x, StartY + LastLine.y )
-            
-            end
-        
-        end
-        
-        function findButtonAtXY( X, Y )
-        
-            if X == nil then return end
-            if Y == nil then return end
-            
-            for Index, Data in pairs( Buttons ) do
-            
-                local Pos = Data.Pos
-                local Size = Data.Size
-            
-                local Min = Pos
-                local Max = Pos + Size
-                
-                if X > Max.x then continue end
-                if X < Min.x then continue end
-                
-                if Y > Max.y then continue end
-                if Y < Min.y then continue end
-                
-                Data.CB()
-                return 
-                
-            end
-            
-        end
-        
-        function newButton( Index, Position, Size, Callback )
-            
-            // Creating a new Button
-            
-            local Data = {
-                Pos=Position,
-                Size=Size,
-                CB=Callback
-            }
-            
-            Buttons[Index] = Data
-        
-        end
-        
-        hook.add( "mouseWheeled", "", function( Delta )
-        
-            ScrollY = math.clamp( ScrollY - Delta, 0, #SongList - MaximumSongsRendered )
-        
-        end)
-        
-        function newSongText( Index, Data )
-
-            local SongFont = render.createFont( 
-                "Roboto", // Font Type
-                15, // Font size
-                500, // Font weight
-                false, // Anti-Alias
-                false, // Additive
-                false, // Shadow
-                false, // Outline
-                false, // Blur Size
-                false, // Extended
-                nil  // Scanlines
-            )
-        
-            local Height = 15
-            
-            local StartX = 15
-            local StartY = 15
-            local FinalY = StartY + ( Index * ( 5 + Height ) )
-            
-            local Text = Data.Name
-            
-            render.setFont( SongFont )
-            render.drawText( StartX + 3, FinalY + 1.25, Text, 0 )
-            
-            local SizeX, SizeY = render.getTextSize( Text )
-            render.drawRectOutline( StartX, FinalY, SizeX + 6, Height + 2.5 )
-            
-            newButton( Index, Vector( StartX, FinalY ), Vector( SizeX + 6, Height + 2.5 ), function()
-            
-                net.start( "SongRequest" )
-                net.writeString( Data.URL )
-                net.send()
             
             end)
-        
+                
+                
         end
-        
-        function menuTick( Alpha )
-            
-            render.setColor( Color( 255, 255, 255, Alpha ) )
-            
-            if table.count( SongList ) <= 0 then return end
-        
-            for Index = 1, MaximumSongsRendered do
-                
-                local Data = SongList[Index+ScrollY]
-                
-                if Data == nil then continue end
-            
-                newSongText( Index, Data )
-            
-            end
-        
-        end
-        
-        hook.add( "inputPressed", "", function( KeyCode )
-        
-            if KeyCode == 15 then
-            
-                findButtonAtXY( CursorX, CursorY )
-            
-            end
-        
-        end)
-        
-        hook.add( "renderoffscreen", "", function()
-        
-            render.selectRenderTarget( "MusicPlayerRT" )
-            
-            if not RenderThread then
-                
-                RenderThread = coroutine.create( function()
-                
-                    render.clear()
-                    
-                    tick()
-                    
-                    if SX then
-                    
-                        if CursorX == nil then return end
-                        if CursorY == nil then return end
-                    
-                        local ShowDistance = 50
-                        local Distance = Vector( 12.5, 12.5, 0 ):getDistance( Vector( CursorX, CursorY, 0 ) )
-                        
-                        local Delta = 1 - math.clamp( 1 / ShowDistance * Distance, 0, 1 )
-                    
-                        render.setColor( Color( 255, 255, 255, 255 * Delta ) )
-                        render.drawFilledCircle( 12.5, 12.5, 7.5 )
-                    
-                        newButton( 0, Vector( 5, 5 ), Vector( 15, 15 ), function()
-                        
-                            MenuOpenned = !MenuOpenned
-                        
-                        end)
-                    
-                        if not MenuOpenned then return end
-                    
-                        if CursorX < ( SX / 3 ) then
 
-                            local MaxAlphaRange = SX / 4
-                            local Max = ( SX / 3 )
-                            local Alpha = 255 - ( 255 / Max * CursorX )
-                        
-                            menuTick( Alpha )
-                        
-                        end
-                    
-                    end
+        if coroutine.status( RenderThread ) == "suspended" and quotaAverage() < quotaMax() * 0.7 then
+            
+            coroutine.resume( RenderThread )
+            
+        end
                 
-                end)
-                    
-                    
-            end
+        if coroutine.status( RenderThread ) == "dead" then
+            
+            RenderThread = nil
+            
+        end
+        
+    end)
     
-            if coroutine.status( RenderThread ) == "suspended" and quotaAverage() < quotaMax() * 0.7 then
-                
-                coroutine.resume( RenderThread )
-                
-            end
-                    
-            if coroutine.status( RenderThread ) == "dead" then
-                
-                RenderThread = nil
-                
-            end
-            
-        end)
+    hook.add( "render", "", function()
+    
+        ScreenEntity = render.getScreenEntity()
+    
+        render.setFilterMag(1)
+        render.setFilterMin(1)
+    
+        SX, SY = render.getResolution()
+        Aspect = SY / SX
         
-        hook.add( "render", "", function()
+        render.setMaterial( RTMaterial )
+        render.drawTexturedRect( 0, 0, SX, SX )
         
-            render.setFilterMag(1)
-            render.setFilterMin(1)
+        CursorX, CursorY = render.cursorPos()
         
-            SX, SY = render.getResolution()
-            Aspect = SY / SX
-            
-            render.setMaterial( RTMaterial )
-            render.drawTexturedRect( 0, 0, SX, SX )
-            
-            CursorX, CursorY = render.cursorPos()
-            
-            if CursorX == nil then return end
-            if CursorY == nil then return end
-            
-            CursorX = CursorX
-            CursorY = CursorY
+        if CursorX == nil then return end
+        if CursorY == nil then return end
         
-        end)
-        
+        CursorX = CursorX
+        CursorY = CursorY
+    
     end)
     
 else
@@ -506,28 +514,6 @@ else
     local CurrentURL = ""
     
     local ResponseCache = {}
-    
-    local BurstRate = 10
-    local Delay = 1 / BurstRate
-    timer.create( "ResponseTick", Delay, 0, function()
-    
-        if ResponseCache[1] then
-        
-            local Data = ResponseCache[1]
-            
-            local URL = Data[1]
-            local Payload = Data[2]
-            local User = Data[3]
-            
-            net.start( URL )
-            if istable( Payload ) then net.writeTable( Payload ) else net.writeEntity( Payload ) end
-            net.send( User )
-            
-            table.remove( ResponseCache, 1 )
-        
-        end
-    
-    end)
 
     local SpawnTime = nil
     local CurrentTime = 0
@@ -544,10 +530,34 @@ else
         
     end
     
-    net.receive( "GetScreen", function( len, plr )
+    local BurstRate = 10
+    local Delay = 1 / BurstRate
+    timer.create( "ResponseTick", Delay, 0, function()
     
-        ResponseCache[ #ResponseCache + 1 ] = { "SendScreen", Screen, plr }
+        try( function()
+    
+            if ResponseCache[1] then
+            
+                local Data = ResponseCache[1]
+                
+                local URL = Data[1]
+                local Information = Data[2]
+                local User = Data[3]
+                
+                net.start( URL )
+                net.writeTable( Information )
+                net.send( User )
+                
+                table.remove( ResponseCache, 1 )
+            
+            end
         
+        end, function( Error )
+        
+        
+        
+        end)
+    
     end)
     
     function requestURL( URL )
