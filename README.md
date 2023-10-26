@@ -44,3 +44,6 @@ Some recommended solutions for this.
 
 `FFTSplits` - This splits the lines into quadents, think of this as how many spikes you want <b>(</b> Default: `2` <b>)</b> <br>
 `Samples` - This is how many samples the FFT calculate has <b>(</b> Default: `6` <b>)</b> <br>
+
+`MaximumHearDistance` - This is the maximum distance people can hear from <b>(</b> Default: `2000` <b>)</b> <br>
+`MinimumHearDistance` - This is the minimum distance to hear the music at maximum volume <b>(</b> Default: `1500` <b>)</b> <br>
