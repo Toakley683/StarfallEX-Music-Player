@@ -37,6 +37,7 @@ Some recommended solutions for this.
 
 `ProgressBarLines` - This is how many lines the progress renders <b>(</b> Default: `128` <b>)</b> <b>`HIGH PERFORMANCE IMPACT`</b> <br>
 `SineScrollMul` - This is how quick the sine waves scrolls <br>
+`SineSpectrum` - This is how many peaks there is in the sine wave <b>(</b> Default: `16` <b>)</b> <br>
 `SineHeight` - This is how tall the sine waves are <br>
 `SineStart` - This is where the sine wave starts ( Negative values start from the bottom ) <br>
 `SineNoiseMultiplier` - This is how much randomness is added to the Sine wave <b>(</b> Default: `0` <b>)</b> <br>
