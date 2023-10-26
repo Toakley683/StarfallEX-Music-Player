@@ -23,7 +23,7 @@ if CLIENT then
     
     local ProgressBarLines = 128
     local SineScrollMul = 2
-    local SineSpectrum = 16
+    local SineSpectrum = 10
     local SineHeight = 15
     local SineStart = -45
     local SineNoiseMultiplier = 0
@@ -51,7 +51,7 @@ if CLIENT then
     
     function sineMath( X )
     
-        return SineHeight * math.sin( ( X / 180 * SineWavelength ) - ( timer.curtime() * SineScrollMul ) )
+        return SineHeight * math.sin( ( X / 180 * SineSpectrum ) - ( timer.curtime() * SineScrollMul ) )
     
     end
     
