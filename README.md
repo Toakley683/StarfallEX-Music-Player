@@ -29,6 +29,8 @@ Some recommended solutions for this.
 
 ## <b>Configuration</b>
 
+### Visual
+
 `CirclePoints` - This is the amount of points around the circle <b>(</b> Default: `384` <b>)</b> <b>`HIGH PERFORMANCE IMPACT`</b> <br>
 `LineReactance` - This is how quickly the lines move to the correct position <br>
 `LineMagnitude` - This is how far much they move based on input from the music <br>
@@ -48,3 +50,7 @@ Some recommended solutions for this.
 
 `MaximumHearDistance` - This is the maximum distance people can hear from <b>(</b> Default: `2000` <b>)</b> <br>
 `MinimumHearDistance` - This is the minimum distance to hear the music at maximum volume <b>(</b> Default: `1500` <b>)</b> <br>
+
+### Experimental
+
+`SquareExpansion` - This changes the circle pattern into more of a square chaotic pattern. `EXPERIMENTAL` <b>(</b> Default: `false` <b>)</b> <br>
