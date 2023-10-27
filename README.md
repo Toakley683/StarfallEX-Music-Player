@@ -53,4 +53,4 @@ Some recommended solutions for this.
 
 ### Experimental
 
-`SquareExpansion` - This changes the circle pattern into more of a square chaotic pattern. `EXPERIMENTAL` <b>(</b> Default: `false` <b>)</b> <br>
+`SquareExpansion` - This changes the circle pattern into more of a square chaotic pattern. <b>(</b> Default: `false` <b>)</b> <br>
