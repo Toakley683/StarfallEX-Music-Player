@@ -31,7 +31,7 @@ Some recommended solutions for this.
 
 ### Visual
 
-`CirclePoints` - This is the amount of points around the circle <b>(</b> Default: `384` <b>)</b> <b>`HIGH PERFORMANCE IMPACT`</b> <br>
+`CirclePoints` - This is the amount of points around the circle <b>(</b> Default: `128` <b>)</b> <b>`HIGH PERFORMANCE IMPACT`</b> <br>( Example has CirclePoints set to 384 ) <br>
 `LineReactance` - This is how quickly the lines move to the correct position <br>
 `LineMagnitude` - This is how far much they move based on input from the music <br>
 `LineMaximumMagnitude` - This is how the maximum distance the circle has from the centre <br>
@@ -39,18 +39,18 @@ Some recommended solutions for this.
 
 `ProgressBarLines` - This is how many lines the progress renders <b>(</b> Default: `128` <b>)</b> <b>`HIGH PERFORMANCE IMPACT`</b> <br>
 `SineScrollMul` - This is how quick the sine waves scrolls <br>
-`SineSpectrum` - This is how many peaks there is in the sine wave <b>(</b> Default: `16` <b>)</b> <br>
+`SineSpectrum` - This is how many peaks there is in the sine wave <b>(</b> Default: `10` <b>)</b> <br>
 `SineHeight` - This is how tall the sine waves are <br>
 `SineStart` - This is where the sine wave starts ( Negative values start from the bottom ) <br>
 `SineNoiseMultiplier` - This is how much randomness is added to the Sine wave <b>(</b> Default: `0` <b>)</b> <br>
-`SineFilled` - Whether or not the sine wave fills in the bottom pixels <b>(</b> Default: `false` <b>)</b> <br>
 
 `FFTSplits` - This splits the lines into quadents, think of this as how many spikes you want <b>(</b> Default: `2` <b>)</b> <br>
-`Samples` - This is how many samples the FFT calculate has <b>(</b> Default: `6` <b>)</b> <br>
+`Samples` - This is how many samples the FFT calculate has <b>(</b> Default: `6` <b>)</b> <b>`HIGH PERFORMANCE IMPACT`</b> <br>
 
-`MaximumHearDistance` - This is the maximum distance people can hear from <b>(</b> Default: `2000` <b>)</b> <br>
-`MinimumHearDistance` - This is the minimum distance to hear the music at maximum volume <b>(</b> Default: `1500` <b>)</b> <br>
+`MinimumHearDistance` - This is the minimum distance to hear the music at maximum volume <b>(</b> Default: `500` <b>)</b> <br>
+`MaximumHearDistance` - This is the maximum distance people can hear from <b>(</b> Default: `700` <b>)</b> <br>
 
 ### Experimental
 
+`SineFilled` - Whether or not the sine wave fills in the bottom pixels <b>(</b> Default: `false` <b>)</b> <br>
 `SquareExpansion` - This changes the circle pattern into more of a square chaotic pattern. <b>(</b> Default: `false` <b>)</b> <br>
