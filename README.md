@@ -5,9 +5,9 @@ The sine wave at the bottom is the progress bar of the song. this will soon be s
 Along with that you can change many settings such as circle points and more, For more information see below.
 
 # Setting up your own playlist
-You need some method of uploading files and music. Upload the .json with the format in the example to a file service and put the download URL in the Starfall <br>
+You need some method of uploading files and music. Have the .json with the format in the example to your 'sf_files' folder, then put the path into the Starfall <br>
  <br>
-You then need to upload your music files somewhere and link them into the .JSON file.
+You then need to upload your music files somewhere and link them into the .JSON file. (Method shown in the example .json file)
 
 ### URLS MUST BE WHITELISTED ACCORDING TO [THIS](https://github.com/thegrb93/StarfallEx/blob/master/lua/starfall/permissions/providers_sh/url_whitelist.lua )
 
